@@ -5,11 +5,17 @@ pipeline {
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker' // mount Docker socket to access the host's Docker daemon
     }
   }
+environment {
+    GIT_REPO_NAME = "Jenkins-Practices"
+    GIT_USER_NAME = "Vercetti06"
+  }
   stages {
     stage('Checkout') {
       steps {
-        sh 'echo passed'
-        //git branch: 'main', url: 'https://github.com/iam-veeramalla/Jenkins-Zero-To-Hero.git'
+        checkout([$class: 'GitSCM',
+          branches: [[name: 'main']],
+          userRemoteConfigs: [[url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"]]
+        ])
       }
     }
     stage('Build and Test') {
@@ -46,13 +52,8 @@ pipeline {
       }
     }
     stage('Update Deployment File') {
-        environment {
-            GIT_REPO_NAME = "Jenkins-Practices"
-            GIT_USER_NAME = "Vercetti06"
-        }
         steps {
-            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-              dir('Jenkins-Practices') {
+            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) 
                 sh '''
                     git config user.email "yaswanth.padakandla@gmail.com"
                     git config user.name "Vercetti06"
@@ -62,7 +63,6 @@ pipeline {
                     git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                     git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                 '''
-            }
             }
         }
     }
