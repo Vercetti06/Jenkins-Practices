@@ -53,6 +53,7 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           sh """
+            git config --global --add safe.directory /var/lib/jenkins/workspace/Jenkin-CI
             git config --global user.email "yaswanth.padakandla@gmail.com"
             git config --global user.name "${env.GIT_USER_NAME}"
             sed -i "s/replaceImageTag/${env.BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
